@@ -1,0 +1,559 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .reports-shell {
+    color: #ffffff;
+  }
+
+  .live-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    background: rgba(255, 215, 0, 0.08);
+    color: #ffd700;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ffd700;
+    animation: livePulse 1.8s infinite;
+  }
+
+  @keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.8); }
+  }
+
+  .reports-shell .card {
+    background: linear-gradient(160deg, #1a1a1a 0%, #111111 100%) !important;
+    border: 1px solid rgba(255, 215, 0, 0.2) !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+    border-radius: 14px;
+  }
+
+  .reports-shell .card-header {
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%) !important;
+    color: #ffd700 !important;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.22) !important;
+  }
+
+  .reports-shell .table {
+    color: #ffffff;
+  }
+
+  .reports-shell .table th {
+    color: #ffd700;
+    border-color: rgba(255, 215, 0, 0.18);
+  }
+
+  .reports-shell .table td {
+    border-color: rgba(255, 215, 0, 0.1);
+    color: #d4d4d4;
+  }
+
+  .reports-shell .table-striped > tbody > tr:nth-of-type(odd) > * {
+    color: #ffffff;
+    background-color: rgba(255, 215, 0, 0.03);
+  }
+
+  .reports-shell .table-hover tbody tr:hover {
+    background-color: rgba(255, 215, 0, 0.08) !important;
+  }
+
+  .model-card {
+    transition: transform 0.2s;
+    border-left: 4px solid #B8860B;
+  }
+  .model-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+  }
+  .metric-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: bold;
+    margin: 0.25rem;
+  }
+  .delayed {
+    background-color: rgba(255, 215, 0, 0.18);
+    color: #ffd700;
+  }
+  .ontime {
+    background-color: rgba(218, 165, 32, 0.18);
+    color: #daa520;
+  }
+  .reports-shell h2 {
+    color: #ffd700;
+    font-weight: 700;
+  }
+  .reports-shell p.text-muted {
+    color: #d4d4d4 !important;
+  }
+</style>
+
+<!-- Header -->
+<div class="reports-shell">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+  <div>
+    <h2><i class="fa-solid fa-chart-bar me-2"></i>Prediction Reports Dashboard</h2>
+    <p class="text-muted">Real-time analysis of all model predictions</p>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <span class="live-chip"><span class="live-dot"></span>LIVE</span>
+    <button onclick="location.reload()" class="btn btn-warning text-dark">
+      <i class="fa-solid fa-rotate me-1"></i> Refresh Data
+    </button>
+  </div>
+</div>
+
+<!-- Dataset Info -->
+{% if dataset_name %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+  <i class="fa-solid fa-database me-2"></i>
+  <strong>Currently Evaluating:</strong> <em>{{ dataset_name }}</em>
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+</div>
+
+<!-- Model Selection Dropdown -->
+<div class="card shadow-sm mb-4 border-warning">
+  <div class="card-header bg-dark text-warning">
+    <h5 class="mb-0"><i class="fa-solid fa-filter me-2"></i>Select Model to View Details</h5>
+  </div>
+  <div class="card-body">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <select class="form-select form-select-lg" id="modelSelect" onchange="changeSelectedModel()">
+          {% for result in all_model_results %}
+          <option value="{{ result.model_code }}" {% if result.model_code == selected_model %}selected{% endif %}>
+            {{ result.model_name }} - Accuracy: {{ result.accuracy|floatformat:1 }}%
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <button class="btn btn-warning text-dark w-100" onclick="changeSelectedModel()">
+          <i class="fa-solid fa-arrow-right me-1"></i> View Results
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function changeSelectedModel() {
+  const modelSelect = document.getElementById('modelSelect');
+  const selectedModel = modelSelect.value;
+  window.location.href = '?model=' + selectedModel;
+}
+</script>
+
+<!-- Selected Model Detailed Results -->
+{% if selected_model_detail %}
+<div class="card shadow-sm mb-4 bg-light">
+  <div class="card-header bg-dark text-warning">
+    <h5 class="mb-0">
+      <i class="fa-solid fa-microscope me-2"></i>
+      {{ selected_model_detail.model_name }} - Detailed Analysis
+    </h5>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-3">
+        <div class="text-center">
+          <h6 class="text-muted">Total Samples Evaluated</h6>
+          <h3 class="text-warning">{{ selected_model_detail.total_predictions }}</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="text-center">
+          <h6 class="text-muted">Accuracy</h6>
+          <h3 class="text-warning">{{ selected_model_detail.accuracy|floatformat:1 }}%</h3>
+          <small>({{ selected_model_detail.correct_count }}/{{ selected_model_detail.total_predictions }})</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="text-center">
+          <h6 class="text-muted">Predicted as Delayed</h6>
+          <h3 class="text-danger">{{ selected_model_detail.delayed_count }}</h3>
+          <small>{% widthratio selected_model_detail.delayed_count selected_model_detail.total_predictions 100 %}%</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="text-center">
+          <h6 class="text-muted">Predicted as On-time</h6>
+          <h3 class="text-warning">{{ selected_model_detail.ontime_count }}</h3>
+          <small>{% widthratio selected_model_detail.ontime_count selected_model_detail.total_predictions 100 %}%</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Summary Statistics -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card shadow-sm h-100">
+      <div class="card-body text-center">
+        <h6 class="text-muted mb-2">Total Predictions Made</h6>
+        <h3 class="mb-0 text-warning">{{ total_predictions }}</h3>
+        <small class="text-muted">by you</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card shadow-sm h-100">
+      <div class="card-body text-center">
+        <h6 class="text-muted mb-2">Models Trained</h6>
+        <h3 class="mb-0 text-warning">{{ models|length }}</h3>
+        <small class="text-muted">active models</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card shadow-sm h-100">
+      <div class="card-body text-center">
+        <h6 class="text-muted mb-2">Your Delayed Predictions</h6>
+        <h3 class="mb-0 text-danger">{{ delayed_predictions }}</h3>
+        <small class="text-muted">
+          {% if total_predictions > 0 %}
+            {% widthratio delayed_predictions total_predictions 100 %}% of predictions
+          {% endif %}
+        </small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card shadow-sm h-100">
+      <div class="card-body text-center">
+        <h6 class="text-muted mb-2">Best Model</h6>
+        <h3 class="mb-0 text-warning">{{ best_model_name }}</h3>
+        <small class="text-muted">by accuracy</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Model Comparison Table -->
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-warning">
+    <h5 class="mb-0"><i class="fa-solid fa-robot me-2"></i>Model Performance Comparison</h5>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-hover table-striped mb-0">
+        <thead class="table-light">
+          <tr>
+            <th width="25%">Model</th>
+            <th width="12%">PR-AUC</th>
+            <th width="12%">Accuracy</th>
+            <th width="15%">Delayed Blocks</th>
+            <th width="15%">On-time Blocks</th>
+            <th width="21%">Dataset Evaluation</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for result in all_model_results %}
+          <tr class="align-middle">
+            <td>
+              <strong>{{ result.model_name }}</strong>
+              <br>
+              <small class="text-muted">{{ result.model_code }}</small>
+            </td>
+            <td>
+              <span class="badge bg-warning text-dark">{{ result.pr_auc|floatformat:3 }}</span>
+            </td>
+            <td>
+              <span class="badge" style="background-color: {% if result.accuracy >= 90 %}#FFD700{% elif result.accuracy >= 70 %}#DAA520{% else %}#B8860B{% endif %}; color: #1a1a1a;">
+                {{ result.accuracy|floatformat:1 }}%
+              </span>
+            </td>
+            <td>
+              <span class="metric-badge delayed">
+                {{ result.delayed_count }} 🔴
+              </span>
+            </td>
+            <td>
+              <span class="metric-badge ontime">
+                {{ result.ontime_count }} 🟢
+              </span>
+            </td>
+            <td>
+              <small class="text-muted">
+                Test on {{ result.total_predictions }} samples
+              </small>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-3">
+              <i class="fa-solid fa-circle-info me-2"></i>
+              No evaluation data. Upload a dataset and train models first.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Your Recent Predictions -->
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-warning">
+    <h5 class="mb-0"><i class="fa-solid fa-history me-2"></i>Your Recent Predictions</h5>
+  </div>
+  <div class="card-body">
+    {% if user_predictions %}
+      <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Time</th>
+              <th>Model</th>
+              <th>Block Interval</th>
+              <th>Fee Rate</th>
+              <th>Prediction</th>
+              <th>Probability</th>
+              <th>Recommendation</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for pred in user_predictions %}
+            <tr class="align-middle">
+              <td>
+                <small class="text-muted">{{ pred.created_at|date:'M d, H:i' }}</small>
+              </td>
+              <td>
+                <span class="badge bg-secondary">{{ pred.model.get_name_display|truncatewords:3 }}</span>
+              </td>
+              <td>{{ pred.block_interval|floatformat:0 }}s</td>
+              <td>{{ pred.fee_rate|floatformat:1 }}</td>
+              <td>
+                {% if pred.is_delay %}
+                  <span class="badge bg-danger">🔴 Delayed</span>
+                {% else %}
+                  <span class="badge bg-warning text-dark">🟢 On-time</span>
+                {% endif %}
+              </td>
+              <td>{{ pred.probability|floatformat:3 }}</td>
+              <td>
+                <small>{{ pred.recommendation|truncatewords:4 }}</small>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-center text-muted py-4">
+        <i class="fa-solid fa-inbox me-2"></i>
+        No predictions yet. Go to <a href="{% url 'predictions:create' %}">Predict</a> page to make a prediction.
+      </p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Model Training Metrics -->
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-warning text-dark">
+    <h5 class="mb-0"><i class="fa-solid fa-chart-line me-2"></i>Training Metrics</h5>
+  </div>
+  <div class="card-body">
+    {% if metrics %}
+    <div class="row">
+      <div class="col-md-8">
+        <canvas id="metricsChart" style="max-height: 300px;"></canvas>
+      </div>
+      <div class="col-md-4">
+        <table class="table table-sm table-borderless">
+          <tbody>
+            {% for metric in metrics %}
+            <tr>
+              <td><strong>{{ metric.model }}</strong></td>
+              <td class="text-end">
+                <div>
+                  <span class="badge bg-warning text-dark">PR-AUC: {{ metric.pr_auc|floatformat:3 }}</span>
+                </div>
+                <div>
+                  <span class="badge bg-dark">Acc: {{ metric.accuracy|floatformat:3 }}</span>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning">
+      <i class="fa-solid fa-triangle-exclamation me-2"></i>
+      Training metrics not available. Please train models first.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Training Metrics Chart
+  (function() {
+    try {
+      const metricsElement = document.getElementById('metricsChart');
+      if (!metricsElement) {
+        console.warn('Chart canvas not found');
+        return;
+      }
+
+      const metricsData = [
+        {% for metric in metrics %}
+        { model: '{{ metric.model }}', pr_auc: {{ metric.pr_auc }}, accuracy: {{ metric.accuracy }} }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ];
+
+      if (metricsData.length === 0) {
+        console.warn('No metrics data available');
+        return;
+      }
+
+      const labels = metricsData.map(m => m.model);
+      const prAucData = metricsData.map(m => m.pr_auc);
+      const accData = metricsData.map(m => m.accuracy);
+
+      const ctx = metricsElement.getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'PR-AUC',
+              data: prAucData,
+              backgroundColor: 'rgba(255, 215, 0, 0.8)',
+              borderColor: 'rgba(255, 215, 0, 1)',
+              borderWidth: 1,
+            },
+            {
+              label: 'Accuracy',
+              data: accData,
+              backgroundColor: 'rgba(184, 134, 11, 0.8)',
+              borderColor: 'rgba(184, 134, 11, 1)',
+              borderWidth: 1,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          indexAxis: 'y',
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            title: {
+              display: true,
+              text: 'Model Training Metrics'
+            }
+          },
+          scales: {
+            x: { 
+              beginAtZero: true, 
+              max: 1.0,
+              ticks: {
+                callback: function(value) {
+                  return (value * 100).toFixed(0) + '%';
+                }
+              }
+            }
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error rendering metrics chart:', error);
+    }
+  })();
+</script>
+
+<div class="mt-4 text-muted small">
+  <i class="fa-solid fa-info-circle me-1"></i>
+  <strong>Tips:</strong> 
+  <ul>
+    <li>📊 Model comparison shows how each algorithm performs on your dataset</li>
+    <li>🔄 Click Refresh Data to see latest metrics</li>
+    <li>📈 Charts automatically update with new training data</li>
+    <li>🎯 Use multiple models to validate predictions</li>
+  </ul>
+</div>
+
+<script>
+  // Real-time Reports updates
+  document.addEventListener('DOMContentLoaded', function() {
+    // Listen for predictions from other tabs/pages
+    window.addEventListener('storage', function(e) {
+      if (e.key === 'lastPredictionTime') {
+        console.log('New prediction detected, auto-refreshing reports...');
+        // Show refresh indicator
+        showReportsRefreshIndicator();
+        // Auto-refresh after 3 seconds to fetch fresh data
+        setTimeout(() => {
+          location.reload();
+        }, 3000);
+      }
+    });
+
+    // Initial setup
+    setupReportsRefresh();
+  });
+
+  function showReportsRefreshIndicator() {
+    const refreshAlert = document.createElement('div');
+    refreshAlert.className = 'alert alert-warning alert-dismissible fade show fixed-top m-3';
+    refreshAlert.style.zIndex = '9999';
+    refreshAlert.innerHTML = `
+      <i class="fa-solid fa-spinner fa-spin me-2"></i>
+      <strong>Updating reports...</strong> New prediction data is being processed.
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.insertBefore(refreshAlert, document.body.firstChild);
+    
+    setTimeout(() => {
+      refreshAlert.remove();
+    }, 4000);
+  }
+
+  function setupReportsRefresh() {
+    // Pulse animation for key metrics
+    const metricBadges = document.querySelectorAll('.badge');
+    setInterval(() => {
+      metricBadges.forEach((badge, index) => {
+        if (index < 3) { // Animate only first 3 for visual effect
+          badge.style.animation = 'none';
+          setTimeout(() => {
+            badge.style.animation = 'badgePulse 0.6s ease';
+          }, 10);
+        }
+      });
+    }, 10000);
+  }
+
+  const reportStyle = document.createElement('style');
+  reportStyle.textContent = `
+    @keyframes badgePulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+      50% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); }
+    }
+  `;
+  document.head.appendChild(reportStyle);
+</script>
+
+{% endblock %}

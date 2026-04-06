@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .register-card {
+    background: linear-gradient(160deg, #1c1c1c 0%, #121212 100%) !important;
+    border: 2px solid rgba(255, 215, 0, 0.25) !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5) !important;
+  }
+  .register-card .card-body {
+    color: #ffffff;
+  }
+  .register-card .card-title {
+    color: #ffd700 !important;
+    font-weight: 700;
+  }
+  .register-card .form-label {
+    color: #e0e0e0 !important;
+  }
+</style>
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card register-card shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title mb-3">Create an account</h3>
+        <form method="post">
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
+          <div class="mb-3">
+            <label class="form-label">Username</label>
+            {{ form.username }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            {{ form.email }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            {{ form.password }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Confirm Password</label>
+            {{ form.password2 }}
+          </div>
+          <button class="btn btn-warning w-100" type="submit">Register</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

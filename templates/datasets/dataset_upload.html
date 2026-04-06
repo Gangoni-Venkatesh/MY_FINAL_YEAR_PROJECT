@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .upload-card {
+    background: linear-gradient(160deg, #1c1c1c 0%, #121212 100%) !important;
+    border: 2px solid rgba(255, 215, 0, 0.25) !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5) !important;
+  }
+  .upload-card .card-body {
+    color: #ffffff;
+  }
+  .upload-card h3 {
+    color: #ffd700;
+    font-weight: 700;
+  }
+  .upload-card .form-label {
+    color: #e0e0e0;
+  }
+</style>
+<h3 class="mb-4" style="color: #ffd700; font-weight: 700;">📤 Upload Blockchain Dataset</h3>
+<form method="post" enctype="multipart/form-data" class="card upload-card p-4 shadow-sm">
+  {% csrf_token %}
+  <div class="mb-3">
+    <label class="form-label">Name</label>
+    {{ form.name }}
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Description</label>
+    {{ form.description }}
+  </div>
+  <div class="mb-3">
+    <label class="form-label">CSV file</label>
+    {{ form.csv_file }}
+  </div>
+  <button class="btn btn-warning" type="submit">📁 Upload Dataset</button>
+</form>
+{% endblock %}

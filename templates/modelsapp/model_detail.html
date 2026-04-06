@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .model-detail-header h3 {
+    color: #ffd700;
+    font-weight: 700;
+  }
+  .model-detail {
+    color: #ffffff;
+  }
+  .model-detail strong {
+    color: #ffd700;
+  }
+  .table th {
+    color: #ffd700 !important;
+  }
+  .table td {
+    color: #d4d4d4 !important;
+  }
+</style>
+<div class="d-flex justify-content-between align-items-center mb-3 model-detail-header">
+  <h3>{{ model.get_name_display }} Details</h3>
+  <div>
+    <button onclick="location.reload()" class="btn btn-warning btn-sm me-2">
+      <i class="fa-solid fa-rotate me-1"></i> Refresh Metrics
+    </button>
+    <a href="{% url 'modelsapp:list' %}" class="btn btn-secondary btn-sm">
+      ← Back to Models
+    </a>
+  </div>
+</div>
+
+<div class="row model-detail">
+  <div class="col-md-6">
+    <p><strong>Version:</strong> {{ model.version }}</p>
+    <p><strong>Trained on:</strong> {{ model.created_at|date:'Y-m-d H:i' }}</p>
+    {% if dataset_name %}
+    <div class="alert alert-info">
+      <i class="fa-solid fa-database me-1"></i>
+      <strong>Evaluated on:</strong> {{ dataset_name }}
+      {% if total_samples %}({{ total_samples }} samples){% endif %}
+    </div>
+    {% endif %}
+
+    {% if confusion_matrix %}
+    <h5>Confusion Matrix</h5>
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th>Predicted ↓ / Actual →</th>
+          <th>On-time (0)</th>
+          <th>Delayed (1)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>On-time (0)</strong></td>
+          <td>{{ confusion_matrix.0.0 }}</td>
+          <td>{{ confusion_matrix.0.1 }}</td>
+        </tr>
+        <tr>
+          <td><strong>Delayed (1)</strong></td>
+          <td>{{ confusion_matrix.1.0 }}</td>
+          <td>{{ confusion_matrix.1.1 }}</td>
+        </tr>
+      </tbody>
+    </table>
+    {% else %}
+      <div class="alert alert-info mt-3">
+        Confusion-matrix metrics are not available for this model.
+      </div>
+    {% endif %}
+
+    {% if classification_report %}
+    <h5>Classification Report</h5>
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th>Class</th>
+          <th>Precision</th>
+          <th>Recall</th>
+          <th>F1</th>
+          <th>Support</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>On-time (0)</td>
+          <td>{{ classification_report.0.precision|floatformat:3 }}</td>
+          <td>{{ classification_report.0.recall|floatformat:3 }}</td>
+          <td>{{ classification_report.0.f1_score|floatformat:3 }}</td>
+          <td>{{ classification_report.0.support }}</td>
+        </tr>
+        <tr>
+          <td>Delayed (1)</td>
+          <td>{{ classification_report.1.precision|floatformat:3 }}</td>
+          <td>{{ classification_report.1.recall|floatformat:3 }}</td>
+          <td>{{ classification_report.1.f1_score|floatformat:3 }}</td>
+          <td>{{ classification_report.1.support }}</td>
+        </tr>
+        <tr class="table-info">
+          <td><strong>Accuracy</strong></td>
+          <td colspan="3">{{ classification_report.accuracy|floatformat:3 }}</td>
+          <td>-</td>
+        </tr>
+      </tbody>
+    </table>
+    {% else %}
+      <div class="alert alert-info mt-3">
+        Classification-report metrics are not available for this model.
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="col-md-6">
+    {% if pr_auc %}
+    <h5>PR Curve (AUC: {{ pr_auc|floatformat:3 }})</h5>
+    <canvas id="prChart" height="220"></canvas>
+
+    <h5 class="mt-4">Metrics Summary</h5>
+    <canvas id="metricChart" height="220"></canvas>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      // PR Curve
+      const prRecall = {{ pr_recall|safe }};
+      const prPrecision = {{ pr_precision|safe }};
+
+      const prCtx = document.getElementById('prChart').getContext('2d');
+      new Chart(prCtx, {
+        type: 'line',
+        data: {
+          labels: prRecall,
+          datasets: [{
+            label: 'Precision-Recall Curve',
+            data: prPrecision,
+            borderColor: 'rgb(218, 165, 32)',
+            tension: 0.1,
+            fill: false
+          }]
+        },
+        options: {
+          scales: {
+            x: { title: { display: true, text: 'Recall' } },
+            y: {
+              title: { display: true, text: 'Precision' },
+              min: 0,
+              max: 1
+            }
+          }
+        }
+      });
+
+      // Metrics bar chart (Delayed class + overall accuracy)
+      const metricCtx = document.getElementById('metricChart').getContext('2d');
+      const metricValues = [
+        {{ class1_precision|default:0 }},
+        {{ class1_recall|default:0 }},
+        {{ class1_f1|default:0 }},
+        {{ overall_accuracy|default:0 }}
+      ];
+      new Chart(metricCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Precision (1)', 'Recall (1)', 'F1 (1)', 'Accuracy'],
+          datasets: [{
+            label: 'Scores',
+            data: metricValues,
+            backgroundColor: [
+              'rgba(255, 215, 0, 0.6)',
+              'rgba(218, 165, 32, 0.6)',
+              'rgba(184, 134, 11, 0.6)',
+              'rgba(139, 101, 8, 0.6)'
+            ],
+            borderColor: [
+              'rgb(255, 215, 0)',
+              'rgb(218, 165, 32)',
+              'rgb(184, 134, 11)',
+              'rgb(139, 101, 8)'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              title: { display: true, text: 'Score' },
+              min: 0,
+              max: 1
+            }
+          }
+        }
+      });
+    </script>
+    {% else %}
+      <div class="alert alert-info mt-3">
+        PR-curve data is not available for this model.
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="mt-3 text-muted small">
+  <p><i class="fa-solid fa-info-circle me-1"></i> 
+  <strong>Note:</strong> These metrics are calculated dynamically on your most recently uploaded dataset. 
+  Upload a new dataset and refresh this page to see updated results.</p>
+</div>
+{% endblock %}

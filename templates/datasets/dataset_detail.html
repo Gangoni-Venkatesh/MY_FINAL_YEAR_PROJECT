@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .detail-header {
+    color: #ffffff;
+  }
+  .detail-header h3 {
+    color: #ffd700;
+    font-weight: 700;
+  }
+  .detail-header .text-muted {
+    color: #d4d4d4 !important;
+  }
+</style>
+<div class="detail-header">
+  <h3>{{ dataset.name }}</h3>
+  <p class="text-muted">{{ dataset.description }}</p>
+  <p class="small text-muted">Uploaded at {{ dataset.uploaded_at|date:'Y-m-d H:i' }}</p>
+</div>
+
+<div class="mt-4">
+  <a href="{{ dataset.csv_file.url }}" class="btn btn-outline-light btn-sm" target="_blank">
+    📁 View Data
+  </a>
+  <a href="{% url 'datasets:train_dataset' dataset.pk %}" class="btn btn-warning btn-sm ms-2">
+    <i class="fa-solid fa-brain me-1"></i> Train models
+  </a>
+  <a href="{% url 'datasets:predictions' dataset.pk %}" class="btn btn-info btn-sm ms-2">
+    <i class="fa-solid fa-chart-line me-1"></i> View Predictions
+  </a>
+  <a href="{% url 'datasets:list' %}" class="btn btn-secondary btn-sm ms-2">
+    ← Back to list
+  </a>
+</div>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .history-refresh-indicator {
+    display: inline-block;
+    margin-left: 1rem;
+  }
+  .history-table {
+    animation: fadeIn 0.5s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  tbody tr:hover {
+    background-color: rgba(255, 215, 0, 0.08);
+  }
+  .history-header h3 {
+    color: #ffffff;
+    font-weight: 700;
+  }
+  .history-header small {
+    color: #d4d4d4;
+  }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-3 history-header">
+  <h3 class="mb-0" style="color: #ffd700;">
+    <i class="fa-solid fa-history me-2"></i>Your Prediction History
+  </h3>
+  <button onclick="location.reload()" class="btn btn-sm btn-outline-warning">
+    <i class="fa-solid fa-rotate me-1"></i>Refresh
+  </button>
+</div>
+
+<div class="card shadow-sm border-warning" style="border-color: rgba(255, 215, 0, 0.35) !important; background: linear-gradient(160deg, #1c1c1c 0%, #121212 100%);">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 history-table" id="predictionTable">
+      <thead style="background: rgba(255, 215, 0, 0.1);">
+        <tr>
+          <th style="color: #ffd700;"><i class="fa-solid fa-clock me-1"></i>Time</th>
+          <th style="color: #ffd700;"><i class="fa-solid fa-brain me-1"></i>Model</th>
+          <th style="color: #ffd700;"><i class="fa-solid fa-percent me-1"></i>Probability</th>
+          <th style="color: #ffd700;"><i class="fa-solid fa-tag me-1"></i>Classification</th>
+          <th style="color: #ffd700;"><i class="fa-solid fa-money-bill me-1"></i>Fee Rate</th>
+          <th style="color: #ffd700;"><i class="fa-solid fa-network-wired me-1"></i>Mempool Count</th>
+        </tr>
+      </thead>
+      <tbody id="predictionBody" style="color: #ffffff;">
+        {% for p in predictions %}
+        <tr class="fade-update" style="animation-delay: {{ forloop.counter }}00ms">
+          <td>
+            <small style="color: #d4d4d4;">{{ p.created_at|date:"M d, H:i" }}</small>
+          </td>
+          <td><strong>{{ p.model.get_name_display }}</strong></td>
+          <td>
+            <span class="badge bg-warning text-dark" style="font-size: 0.9rem;">
+              {% widthratio p.probability 1 100 %}%
+            </span>
+          </td>
+          <td>
+            {% if p.is_delay %}
+              <span class="badge bg-danger">Delayed (1)</span>
+            {% else %}
+              <span class="badge bg-success">On-Time (0)</span>
+            {% endif %}
+          </td>
+          <td>{{ p.fee_rate }}</td>
+          <td>{{ p.mempool_tx_count }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center py-4" style="color: #d4d4d4;">
+            <i class="fa-solid fa-inbox me-2"></i>No predictions yet. <a href="{% url 'predictions:create' %}">Make your first prediction</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  // Real-time Prediction History updates
+  document.addEventListener('DOMContentLoaded', function() {
+    // Listen for new predictions
+    window.addEventListener('storage', function(e) {
+      if (e.key === 'lastPredictionTime') {
+        console.log('New prediction detected, updating history...');
+        showHistoryUpdate();
+        // Auto-refresh to show new predictions
+        setTimeout(() => {
+          location.reload();
+        }, 3000);
+      }
+    });
+  });
+
+  function showHistoryUpdate() {
+    const historyAlert = document.createElement('div');
+    historyAlert.className = 'alert alert-warning alert-dismissible fade show fixed-top m-3';
+    historyAlert.style.zIndex = '9999';
+    historyAlert.innerHTML = `
+      <i class="fa-solid fa-check-circle me-2"></i>
+      <strong>New prediction added!</strong> History is being updated...
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.insertBefore(historyAlert, document.body.firstChild);
+    
+    // Animate table rows
+    const rows = document.querySelectorAll('#predictionBody tr');
+    rows.forEach((row, index) => {
+      if (index === 0) { // Highlight newest prediction
+        row.style.backgroundColor = 'rgba(255, 215, 0, 0.15)';
+        setTimeout(() => {
+          row.style.backgroundColor = '';
+        }, 2000);
+      }
+    });
+    
+    setTimeout(() => {
+      historyAlert.remove();
+    }, 3500);
+  }
+</script>
+
+{% endblock %}

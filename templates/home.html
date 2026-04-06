@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row align-items-center min-vh-75">
+  <div class="col-lg-6">
+    <h1 class="display-5 fw-bold mb-3">Predict Bitcoin Block Delays</h1>
+    <p class="lead text-muted mb-4">
+      Upload blockchain data, train logistic regression models (MLE & Bayesian),
+      and predict whether the next block will be delayed or on time.
+    </p>
+    <ul class="list-unstyled mb-4">
+      <li><i class="fa-solid fa-check text-success me-2"></i> MLE, HMC, Gibbs logistic models</li>
+      <li><i class="fa-solid fa-check text-success me-2"></i> PR‑AUC evaluation for imbalanced data</li>
+      <li><i class="fa-solid fa-check text-success me-2"></i> Fee & timing advisory for users</li>
+    </ul>
+    {% if not user.is_authenticated %}
+    <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg me-2">Get Started</a>
+    <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary btn-lg">Login</a>
+    {% else %}
+    <a href="{% url 'accounts:dashboard' %}" class="btn btn-primary btn-lg">Go to Dashboard</a>
+    {% endif %}
+  </div>
+  <div class="col-lg-6">
+    <div class="card shadow-lg border-0">
+      <div class="card-body">
+        <h5 class="card-title mb-3">System Highlights</h5>
+        <p class="small text-muted">
+          Models trained using Precision‑Recall AUC to handle class imbalance between delayed and on‑time blocks, as described in the research. [file:1]
+        </p>
+        <p class="small text-muted mb-0">
+          Use this tool to explore how mempool size, fee rates, and difficulty affect delay probability. [file:1]
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

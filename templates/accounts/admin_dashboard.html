@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .admin-header {
+    background: linear-gradient(135deg, #131313 0%, #232323 52%, #1a1a1a 100%);
+    color: #fff;
+    padding: 3rem 2.5rem;
+    border-radius: 24px;
+    margin-bottom: 3rem;
+    border: 2px solid rgba(255, 215, 0, 0.35);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+  }
+
+  .admin-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: #ffd700;
+  }
+
+  .admin-subtitle {
+    font-size: 1.1rem;
+    color: #dbc98a;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .stat-card {
+    background: linear-gradient(160deg, #1c1c1c 0%, #121212 100%);
+    border: 2px solid rgba(255, 215, 0, 0.25);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 30px rgba(255, 215, 0, 0.2);
+  }
+
+  .stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #ffd700;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+    color: #bbb;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .users-section {
+    background: linear-gradient(160deg, #1c1c1c 0%, #121212 100%);
+    border: 2px solid rgba(255, 215, 0, 0.25);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .section-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #ffd700;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid rgba(255, 215, 0, 0.25);
+    padding-bottom: 1rem;
+  }
+
+  .user-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .user-table thead {
+    background: rgba(255, 215, 0, 0.1);
+  }
+
+  .user-table th {
+    padding: 1rem;
+    text-align: left;
+    color: #ffd700;
+    font-weight: 700;
+    border-bottom: 2px solid rgba(255, 215, 0, 0.25);
+  }
+
+  .user-table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.12);
+    color: #ccc;
+  }
+
+  .user-table tbody tr:hover {
+    background-color: rgba(255, 215, 0, 0.05);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-right: 0.3rem;
+  }
+
+  .badge-active {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+  }
+
+  .badge-inactive {
+    background: rgba(244, 67, 54, 0.2);
+    color: #f44336;
+  }
+
+  .badge-staff {
+    background: rgba(33, 150, 243, 0.2);
+    color: #2196f3;
+  }
+
+  .badge-superuser {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(218, 165, 32, 0.2));
+    color: #ffd700;
+  }
+
+  .action-btn {
+    padding: 0.5rem 1rem;
+    margin: 0.2rem;
+    border-radius: 0.4rem;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-manage {
+    background: linear-gradient(135deg, #ffd700 0%, #daa520 100%);
+    color: #141414;
+  }
+
+  .btn-manage:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(255, 215, 0, 0.3);
+  }
+
+  .no-users {
+    text-align: center;
+    padding: 2rem;
+    color: #999;
+  }
+
+  .user-name {
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .user-email {
+    font-size: 0.85rem;
+    color: #999;
+  }
+
+  .user-joined {
+    font-size: 0.85rem;
+    color: #777;
+  }
+</style>
+
+<div class="admin-header">
+  <div class="admin-title">🛡️ Admin Dashboard</div>
+  <div class="admin-subtitle">System administration and user management</div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-number">{{ total_users }}</div>
+    <div class="stat-label">Total Users</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">{{ active_users }}</div>
+    <div class="stat-label">Active Users</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">{{ staff_users }}</div>
+    <div class="stat-label">Staff Members</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">{{ superusers }}</div>
+    <div class="stat-label">Superusers</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">{{ total_datasets }}</div>
+    <div class="stat-label">Datasets</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">{{ total_models }}</div>
+    <div class="stat-label">ML Models</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">{{ total_predictions }}</div>
+    <div class="stat-label">Predictions</div>
+  </div>
+</div>
+
+<div class="users-section">
+  <div class="section-title">👥 User Management</div>
+  
+  {% if users %}
+    <div style="overflow-x: auto;">
+      <table class="user-table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Role</th>
+            <th>Joined</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+            <tr>
+              <td>
+                <div class="user-name">{{ user.username }}</div>
+              </td>
+              <td>
+                <div class="user-email">{{ user.email|default:"No email" }}</div>
+              </td>
+              <td>
+                {% if user.is_active %}
+                  <span class="badge badge-active">✓ Active</span>
+                {% else %}
+                  <span class="badge badge-inactive">✗ Inactive</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if user.is_superuser %}
+                  <span class="badge badge-superuser">⭐ Superuser</span>
+                {% elif user.is_staff %}
+                  <span class="badge badge-staff">Staff</span>
+                {% else %}
+                  <span style="color: #999;">User</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="user-joined">{{ user.date_joined|date:"M d, Y" }}</div>
+              </td>
+              <td>
+                <a href="{% url 'accounts:manage_user' user.id %}" class="action-btn btn-manage">
+                  ⚙️ Manage
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="no-users">No users found.</div>
+  {% endif %}
+</div>
+
+{% endblock %}

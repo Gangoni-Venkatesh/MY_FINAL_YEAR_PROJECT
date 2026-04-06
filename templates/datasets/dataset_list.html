@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .datasets-shell {
+    color: #ffffff;
+  }
+
+  .live-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    background: rgba(255, 215, 0, 0.08);
+    color: #ffd700;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ffd700;
+    animation: livePulse 1.8s infinite;
+  }
+
+  @keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.8); }
+  }
+
+  .fade-in {
+    animation: fadeIn 0.5s ease-in;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .slide-in {
+    animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .table-row-animated {
+    transition: all 0.3s ease;
+  }
+
+  .table-row-animated:hover {
+    background-color: rgba(255, 215, 0, 0.08) !important;
+    transform: translateX(5px);
+  }
+
+  .refresh-btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .refresh-btn:hover {
+    transform: rotate(180deg);
+  }
+
+  .header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    animation: slideIn 0.5s ease;
+    gap: 12px;
+  }
+
+  .badge-new {
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { 
+      background-color: #FFD700;
+      box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
+    }
+    50% {
+      box-shadow: 0 0 0 10px rgba(255, 215, 0, 0);
+    }
+  }
+
+  .loading-spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .table-container {
+    background: linear-gradient(160deg, #1a1a1a 0%, #111111 100%);
+    border-radius: 14px;
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.45), 0 0 24px rgba(255, 215, 0, 0.12);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    overflow: hidden;
+    animation: fadeIn 0.5s ease;
+  }
+
+  .table-container .table {
+    color: #f6edc2;
+  }
+
+  .table-container thead th {
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%) !important;
+    color: #ffd700;
+    border-bottom-color: rgba(255, 215, 0, 0.2);
+  }
+
+  .table-container tbody td {
+    border-color: rgba(255, 215, 0, 0.1);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #d8c57b;
+  }
+
+  .empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+</style>
+
+<div class="datasets-shell">
+<div class="header-section">
+  <div class="d-flex align-items-center gap-3 flex-wrap">
+    <div>
+    <h2 style="margin-bottom: 0.5rem;">
+      <i class="fa-solid fa-database me-2"></i>Your Datasets
+    </h2>
+    <p class="text-muted mb-0">
+      <span id="datasetCount">{{ datasets|length }}</span> dataset(s) uploaded
+    </p>
+    </div>
+    <span class="live-chip"><span class="live-dot"></span>LIVE</span>
+  </div>
+  <div class="btn-group">
+    <button onclick="location.reload()" class="btn btn-outline-warning refresh-btn" title="Refresh">
+      <i class="fa-solid fa-rotate me-1"></i> Refresh
+    </button>
+    <a href="{% url 'datasets:upload' %}" class="btn btn-warning text-dark">
+      <i class="fa-solid fa-upload me-1"></i> Upload New Dataset
+    </a>
+  </div>
+</div>
+
+<div class="table-container">
+  {% if datasets %}
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th width="25%">Dataset Name</th>
+          <th width="40%">Description</th>
+          <th width="20%">Uploaded Date</th>
+          <th width="15%">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="datasetBody">
+        {% for ds in datasets %}
+        <tr class="table-row-animated fade-in" style="animation-delay: {{ forloop.counter|add:0 }}00ms">
+          <td>
+            <div class="d-flex align-items-center">
+              <i class="fa-solid fa-file-csv text-warning me-2"></i>
+              <div>
+                <strong>{{ ds.name }}</strong>
+                {% if ds.uploaded_at|date:'Y-m-d' == 'today' %}
+                <br><span class="badge bg-warning text-dark badge-new">New</span>
+                {% endif %}
+              </div>
+            </div>
+          </td>
+          <td class="text-muted small">
+            {{ ds.description|truncatewords:15 }}
+          </td>
+          <td>
+            <small class="text-muted">
+              <i class="fa-solid fa-calendar me-1"></i>
+              {{ ds.uploaded_at|date:'M d, Y - H:i' }}
+            </small>
+          </td>
+          <td>
+            <div class="btn-group btn-group-sm">
+              <a href="{% url 'datasets:detail' ds.pk %}" class="btn btn-outline-warning">
+                <i class="fa-solid fa-eye"></i> View
+              </a>
+              <a href="{% url 'datasets:train_dataset' ds.pk %}" class="btn btn-dark" onclick="return confirm('Train models on this dataset?')">
+                <i class="fa-solid fa-brain"></i> Train
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon">
+      <i class="fa-solid fa-inbox"></i>
+    </div>
+    <h5>No Datasets Yet</h5>
+    <p class="mb-3">Start by uploading your first blockchain dataset to train models</p>
+    <a href="{% url 'datasets:upload' %}" class="btn btn-warning text-dark">
+      <i class="fa-solid fa-upload me-1"></i> Upload Your First Dataset
+    </a>
+  </div>
+  {% endif %}
+</div>
+ </div>
+
+<script>
+  // Real-time Datasets auto-refresh
+  document.addEventListener('DOMContentLoaded', function() {
+    // Listen for predictions from other tabs/pages
+    window.addEventListener('storage', function(e) {
+      if (e.key === 'lastPredictionTime') {
+        console.log('New prediction detected, updating datasets...');
+        animateDatasetTable();
+        // Auto-refresh after 4 seconds to see any new data
+        setTimeout(() => {
+          location.reload();
+        }, 4000);
+      }
+    });
+
+    setupDatasetsRefresh();
+  });
+
+  function animateDatasetTable() {
+    const rows = document.querySelectorAll('tbody tr.table-row-animated');
+    rows.forEach((row, index) => {
+      setTimeout(() => {
+        row.classList.add('refresh-pulse');
+        setTimeout(() => {
+          row.classList.remove('refresh-pulse');
+        }, 600);
+      }, index * 100);
+    });
+
+    // Show update notification
+    const tableAlert = document.createElement('div');
+    tableAlert.className = 'alert alert-warning alert-dismissible fade show fixed-top m-3';
+    tableAlert.style.zIndex = '9999';
+    tableAlert.innerHTML = `
+      <i class="fa-solid fa-database me-2"></i>
+      <strong>Dataset status checking...</strong> Verifying dataset integrity.
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.insertBefore(tableAlert, document.body.firstChild);
+    
+    setTimeout(() => {
+      tableAlert.remove();
+    }, 4500);
+  }
+
+  function setupDatasetsRefresh() {
+    // Periodic subtle animation
+    setInterval(() => {
+      const countBadge = document.getElementById('datasetCount');
+      if (countBadge) {
+        countBadge.style.animation = 'none';
+        setTimeout(() => {
+          countBadge.style.animation = 'countPulse 0.5s ease';
+        }, 10);
+      }
+    }, 15000);
+  }
+
+  const datasetStyle = document.createElement('style');
+  datasetStyle.textContent = `
+    @keyframes countPulse {
+      0%, 100% { color: #B8860B; font-size: 1em; }
+      50% { color: #FFD700; font-size: 1.1em; }
+    }
+  `;
+  document.head.appendChild(datasetStyle);
+</script>
+{% endblock %}

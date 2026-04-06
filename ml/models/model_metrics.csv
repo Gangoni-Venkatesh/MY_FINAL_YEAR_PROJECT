@@ -1,0 +1,4 @@
+model,pr_auc,accuracy
+MLE,1.0,1.0
+Bayes_HMC,1.0,1.0
+Bayes_Gibbs,1.0,0.9157894736842106

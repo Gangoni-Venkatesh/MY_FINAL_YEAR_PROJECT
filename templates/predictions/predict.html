@@ -1,0 +1,547 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .predict-shell {
+    color: #ffffff;
+  }
+
+  .live-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    background: rgba(255, 215, 0, 0.08);
+    color: #ffd700;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ffd700;
+    animation: livePulse 1.8s infinite;
+  }
+
+  @keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.8); }
+  }
+
+  .prediction-container {
+    animation: fadeInScale 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .form-card {
+    background: linear-gradient(160deg, #1a1a1a 0%, #111111 100%);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+    transition: all 0.3s ease;
+  }
+
+  .form-card:hover {
+    box-shadow: 0 8px 20px rgba(255, 215, 0, 0.2);
+  }
+
+  .form-header {
+    padding: 2rem;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+    color: white;
+    border-radius: 12px 12px 0 0;
+    margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+    border-bottom: 3px solid #FFD700;
+  }
+
+  .form-header h3 {
+    margin: 0;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-label {
+    font-weight: 600;
+    color: #f5e9b6;
+    margin-bottom: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+  }
+
+  .form-control, .form-select {
+    border: 2px solid rgba(255, 215, 0, 0.25);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+    background-color: #1f1f1f;
+    color: #f8f2d2;
+  }
+
+  .form-control:focus, .form-select:focus {
+    border-color: #DAA520;
+    box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.2);
+    background-color: #1f1f1f;
+    color: #f8f2d2;
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 0.9rem;
+    font-weight: 600;
+    font-size: 1.05rem;
+    background: linear-gradient(135deg, #FFD700 0%, #DAA520 100%);
+    border: none;
+    border-radius: 8px;
+    color: #1a1a1a;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 1rem;
+  }
+
+  .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
+  }
+
+  .submit-btn:active {
+    transform: translateY(0);
+  }
+
+  .result-card {
+    background: linear-gradient(160deg, #1a1a1a 0%, #111111 100%);
+    border-left: 5px solid #B8860B;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+    animation: slideInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .result-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 1.5rem;
+  }
+
+  .result-icon {
+    font-size: 2.5rem;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .result-icon.delayed {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+  }
+
+  .result-icon.ontime {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+  }
+
+  .result-title {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .probability-bar {
+    width: 100%;
+    height: 30px;
+    background: #2b2b2b;
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 1rem 0;
+  }
+
+  .probability-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #B8860B 0%, #FFD700 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: width 0.6s ease;
+  }
+
+  .metric-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #202020;
+    border-radius: 8px;
+    margin-bottom: 0.8rem;
+    border-left: 4px solid #B8860B;
+  }
+
+  .metric-label {
+    font-weight: 600;
+    color: #d8c57b;
+  }
+
+  .metric-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #B8860B 0%, #FFD700 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .recommendation-box {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.08) 0%, rgba(218, 165, 32, 0.08) 100%);
+    border-left: 4px solid #B8860B;
+    border-radius: 8px;
+    margin-top: 1.5rem;
+    font-style: italic;
+    color: #f3e5ad;
+    line-height: 1.6;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.08) 0%, rgba(218, 165, 32, 0.08) 100%);
+    border-radius: 12px;
+    border: 2px dashed #B8860B;
+  }
+
+  .empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+</style>
+
+<div class="prediction-container">
+  <div class="mb-4 predict-shell d-flex justify-content-between align-items-start gap-3 flex-wrap">
+    <div>
+    <h2 style="margin-bottom: 0.5rem;">
+      <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Block Delay Predictor
+    </h2>
+    <p class="text-muted mb-0">
+      Enter network conditions to predict if the next block will be delayed
+    </p>
+    </div>
+    <span class="live-chip"><span class="live-dot"></span>LIVE</span>
+  </div>
+
+  <div class="row g-4">
+    <!-- Input Form -->
+    <div class="col-lg-6">
+      <div class="form-card">
+        <div class="form-header">
+          <h3><i class="fa-solid fa-keyboard"></i>Input Network Data</h3>
+        </div>
+        
+        <div style="padding: 1.5rem;">
+          <form method="post" id="predictionForm">
+            {% csrf_token %}
+            
+            <!-- Model Selection -->
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fa-solid fa-brain"></i>{{ form.model.label }}
+              </label>
+              {{ form.model }}
+            </div>
+
+            <!-- Feature Inputs -->
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fa-solid fa-hourglass-end"></i>{{ form.block_interval.label }}
+              </label>
+              <input type="number" step="0.1" name="block_interval" class="form-control" placeholder="e.g., 600" value="{{ form.block_interval.value|default:'' }}" required>
+              <small class="text-muted d-block mt-1">Time between blocks (seconds)</small>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fa-solid fa-cube"></i>{{ form.block_size.label }}
+              </label>
+              <input type="number" step="0.01" name="block_size" class="form-control" placeholder="e.g., 1.5" value="{{ form.block_size.value|default:'' }}" required>
+              <small class="text-muted d-block mt-1">Block size (bytes)</small>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fa-solid fa-money-bill"></i>{{ form.fee_rate.label }}
+              </label>
+              <input type="number" step="0.1" name="fee_rate" class="form-control" placeholder="e.g., 50" value="{{ form.fee_rate.value|default:'' }}" required>
+              <small class="text-muted d-block mt-1">Transaction fee rate (sat/vB)</small>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fa-solid fa-chart-line"></i>{{ form.difficulty.label }}
+              </label>
+              <input type="number" step="0.01" name="difficulty" class="form-control" placeholder="e.g., 80000000000" value="{{ form.difficulty.value|default:'' }}" required>
+              <small class="text-muted d-block mt-1">Mining difficulty</small>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fa-solid fa-flash"></i>{{ form.hash_rate.label }}
+              </label>
+              <input type="number" step="0.01" name="hash_rate" class="form-control" placeholder="e.g., 600" value="{{ form.hash_rate.value|default:'' }}" required>
+              <small class="text-muted d-block mt-1">Network hash rate</small>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fa-solid fa-network-wired"></i>{{ form.mempool_tx_count.label }}
+              </label>
+              <input type="number" step="1" name="mempool_tx_count" class="form-control" placeholder="e.g., 50000" value="{{ form.mempool_tx_count.value|default:'' }}" required>
+              <small class="text-muted d-block mt-1">Transactions in mempool</small>
+            </div>
+
+            <button class="submit-btn" type="submit" id="submitBtn">
+              <i class="fa-solid fa-bolt me-2"></i>Generate Prediction
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result Display -->
+    <div class="col-lg-6">
+      {% if result %}
+      <div class="result-card">
+        <div class="result-header">
+          <div class="result-icon {% if result.is_delay %}delayed{% else %}ontime{% endif %}">
+            {% if result.is_delay %}
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            {% else %}
+              <i class="fa-solid fa-circle-check"></i>
+            {% endif %}
+          </div>
+          <div>
+            <h4 class="result-title">
+              {% if result.is_delay %}
+                Block Delay Predicted
+              {% else %}
+                On-Time Block Predicted
+              {% endif %}
+            </h4>
+            <p class="text-muted mb-0" style="font-size: 0.9rem;">
+              Model: <strong>{{ result.model.get_name_display }}</strong>
+            </p>
+          </div>
+        </div>
+
+        <!-- Probability Bar -->
+        <div>
+          <div class="d-flex justify-content-between mb-2">
+            <span style="font-weight: 600;">Delay Probability</span>
+            <span style="font-weight: 700; color: #B8860B;">
+              {% widthratio result.probability 1 100 %}%
+            </span>
+          </div>
+          <div class="probability-bar">
+            <div class="probability-fill" style="width: {% widthratio result.probability 1 100 %}%;">
+              {% widthratio result.probability 1 100 %}%
+            </div>
+          </div>
+        </div>
+
+        <!-- Metrics -->
+        <div class="mt-3">
+          <div class="metric-item">
+            <span class="metric-label">Classification</span>
+            <span class="metric-value">
+              {% if result.is_delay %}
+                <span class="badge bg-danger" style="font-size: 1rem;">Delayed (1)</span>
+              {% else %}
+                <span class="badge bg-success" style="font-size: 1rem;">On-Time (0)</span>
+              {% endif %}
+            </span>
+          </div>
+
+          <div class="metric-item">
+            <span class="metric-label">Confidence</span>
+            <span class="metric-value">
+              {% if result.probability >= 0.7 or result.probability <= 0.3 %}
+                <span class="badge bg-success">High</span>
+              {% elif result.probability >= 0.55 or result.probability <= 0.45 %}
+                <span class="badge bg-warning">Medium</span>
+              {% else %}
+                <span class="badge bg-info">Low</span>
+              {% endif %}
+            </span>
+          </div>
+        </div>
+
+        <!-- Recommendation -->
+        <div class="recommendation-box">
+          <i class="fa-solid fa-lightbulb me-2"></i>
+          <strong>Advisory:</strong> {{ result.recommendation }}
+        </div>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </div>
+        <h5 style="color: #666;">Ready to Predict</h5>
+        <p class="text-muted">
+          Fill in the network parameters and click "Generate Prediction" to see results and recommendations
+        </p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  // Form submission handler with dynamic updates
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('predictionForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        // Add loading animation
+        submitBtn.innerHTML = '<span class="loading-spinner"></span>Generating...';
+        submitBtn.disabled = true;
+        
+        // After form submission, broadcast to other pages
+        setTimeout(() => {
+          // Notify other tabs/pages using localStorage
+          localStorage.setItem('lastPredictionTime', new Date().toISOString());
+          
+          // Directly update dashboard stats via API if it's open in another tab
+          fetch('/accounts/api/dashboard-stats/')
+            .then(response => response.json())
+            .then(data => {
+              console.log('Dashboard stats updated:', data);
+            })
+            .catch(err => console.log('Note: Dashboard will auto-refresh when back in focus'));
+          
+          // Show success notification
+          showPredictionNotification();
+          
+          // Re-enable button
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="fa-solid fa-bolt me-2"></i>Generate Prediction';
+          
+          const resultCard = document.querySelector('.result-card');
+          if (resultCard) {
+            resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 1000);
+      });
+    }
+
+    // Animate probability bars when page loads
+    const probabilityFills = document.querySelectorAll('.probability-fill');
+    probabilityFills.forEach(bar => {
+      const width = bar.style.width;
+      bar.style.width = '0';
+      setTimeout(() => {
+        bar.style.width = width;
+      }, 100);
+    });
+
+    // Add change listeners to form inputs for real-time validation
+    const formInputs = form ? form.querySelectorAll('input, select') : [];
+    formInputs.forEach(input => {
+      input.addEventListener('change', function() {
+        // Add visual feedback on input change
+        this.classList.add('changed');
+        setTimeout(() => {
+          this.classList.remove('changed');
+        }, 300);
+      });
+    });
+  });
+
+  // Show prediction notification
+  function showPredictionNotification() {
+    // Create notification badge
+    const notificationBadge = document.createElement('div');
+    notificationBadge.className = 'alert alert-warning alert-dismissible fade show fixed-top m-3';
+    notificationBadge.style.zIndex = '9999';
+    notificationBadge.innerHTML = `
+      <i class="fa-solid fa-check-circle me-2"></i>
+      <strong>Prediction Recorded!</strong> Dashboard and Reports are updating...
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.insertBefore(notificationBadge, document.body.firstChild);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+      notificationBadge.remove();
+    }, 5000);
+  }
+</script>
+
+<style>
+  .loading-spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .form-control.changed {
+    box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.4);
+    animation: pulse 0.3s ease;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+  }
+</style>
+
+{% endblock %}

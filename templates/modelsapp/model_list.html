@@ -1,0 +1,367 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .models-shell {
+    color: #ffffff;
+  }
+
+  .live-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    background: rgba(255, 215, 0, 0.08);
+    color: #ffd700;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ffd700;
+    animation: livePulse 1.8s infinite;
+  }
+
+  @keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.8); }
+  }
+
+  .model-card {
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(160deg, #1a1a1a 0%, #111111 100%);
+    animation: scaleIn 0.5s ease backwards;
+  }
+
+  .model-card:nth-child(1) { animation-delay: 0.1s; }
+  .model-card:nth-child(2) { animation-delay: 0.2s; }
+  .model-card:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .model-card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 20px 40px rgba(255, 215, 0, 0.25);
+  }
+
+  .model-card-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+    color: white;
+    border-bottom: 4px solid #FFD700;
+  }
+
+  .model-card-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .model-card-title i {
+    margin-right: 10px;
+    font-size: 1.5rem;
+  }
+
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.18);
+    align-items: center;
+    transition: all 0.3s ease;
+  }
+
+  .metric-row:hover {
+    background-color: rgba(255, 215, 0, 0.08);
+    padding-left: 10px;
+  }
+
+  .metric-row:last-child {
+    border-bottom: none;
+  }
+
+  .metric-label {
+    font-weight: 600;
+    color: #e4d492;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .metric-value {
+    font-weight: 700;
+    font-size: 1.2rem;
+    background: linear-gradient(135deg, #B8860B 0%, #FFD700 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .metric-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    gap: 5px;
+  }
+
+  .metric-badge.excellent {
+    background: rgba(255, 215, 0, 0.2);
+    color: #8B6508;
+  }
+
+  .metric-badge.good {
+    background: rgba(218, 165, 32, 0.2);
+    color: #6b4f00;
+  }
+
+  .header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    animation: slideDown 0.5s ease;
+    gap: 12px;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: linear-gradient(160deg, #1a1a1a 0%, #111111 100%);
+    border-radius: 14px;
+    border: 1px dashed rgba(255, 215, 0, 0.3);
+  }
+
+  .empty-state-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+  }
+
+  .btn-details {
+    width: 100%;
+    margin-top: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #FFD700 0%, #DAA520 100%);
+    border: none;
+    color: #1a1a1a;
+  }
+
+  .btn-details:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 215, 0, 0.4);
+    color: #1a1a1a;
+  }
+</style>
+
+<div class="models-shell">
+<div class="header-section">
+  <div class="d-flex align-items-center gap-3 flex-wrap">
+    <div>
+    <h2 style="margin-bottom: 0.5rem;">
+      <i class="fa-solid fa-brain me-2"></i>Trained ML Models
+    </h2>
+    <p class="text-muted mb-0">
+      <span id="modelCount">{{ detailed_metrics|length }}</span> active model(s)
+    </p>
+    </div>
+    <span class="live-chip"><span class="live-dot"></span>LIVE</span>
+  </div>
+  <button onclick="location.reload()" class="btn btn-outline-warning">
+    <i class="fa-solid fa-rotate me-1"></i> Refresh Metrics
+  </button>
+</div>
+
+{% if detailed_metrics %}
+<div class="row g-4" id="modelsGrid">
+  {% for metric in detailed_metrics %}
+  <div class="col-lg-4 col-md-6">
+    <div class="model-card shadow-sm">
+      <div class="model-card-header">
+        <h5 class="model-card-title">
+          {% if 'MLE' in metric.model.get_name_display %}
+            <i class="fa-solid fa-chart-line"></i>
+          {% elif 'HMC' in metric.model.get_name_display %}
+            <i class="fa-solid fa-waveform-lines"></i>
+          {% else %}
+            <i class="fa-solid fa-random"></i>
+          {% endif %}
+          {{ metric.model.get_name_display }}
+        </h5>
+      </div>
+      
+      <div class="card-body p-0">
+        <div style="padding: 1.5rem;">
+          <!-- Metrics Section -->
+          <div class="metric-row">
+            <span class="metric-label">
+              <i class="fa-solid fa-chart-area me-1"></i>PR-AUC Score
+            </span>
+            <span class="metric-badge excellent">
+              <i class="fa-solid fa-star"></i>
+              {{ metric.pr_auc|floatformat:3 }}
+            </span>
+          </div>
+
+          <div class="metric-row">
+            <span class="metric-label">
+              <i class="fa-solid fa-bullseye me-1"></i>Accuracy
+            </span>
+            <span class="metric-value">
+              {% widthratio metric.accuracy 1 100 %}%
+            </span>
+          </div>
+
+          <div class="metric-row">
+            <span class="metric-label">
+              <i class="fa-solid fa-target me-1"></i>Precision
+            </span>
+            <span class="metric-value">
+              {% widthratio metric.precision 1 100 %}%
+            </span>
+          </div>
+
+          <div class="metric-row">
+            <span class="metric-label">
+              <i class="fa-solid fa-circle-check me-1"></i>Recall
+            </span>
+            <span class="metric-value">
+              {% widthratio metric.recall 1 100 %}%
+            </span>
+          </div>
+
+          <div class="metric-row">
+            <span class="metric-label">
+              <i class="fa-solid fa-scale-balanced me-1"></i>F1-Score
+            </span>
+            <span class="metric-badge good">
+              {{ metric.f1|floatformat:3 }}
+            </span>
+          </div>
+
+          <!-- Action Button -->
+          <a href="{% url 'modelsapp:detail' metric.model.pk %}" class="btn btn-details">
+            <i class="fa-solid fa-chart-line me-1"></i>View Details & Charts
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-state-icon">
+    <i class="fa-solid fa-brain"></i>
+  </div>
+  <h4 style="color: #999;">No Models Trained Yet</h4>
+  <p class="text-muted mb-3">Upload a dataset and train models to see results here</p>
+  <a href="{% url 'datasets:list' %}" class="btn btn-warning text-dark">
+    <i class="fa-solid fa-database me-1"></i>Go to Datasets
+  </a>
+</div>
+{% endif %}
+</div>
+
+<script>
+  // Real-time Models auto-refresh
+  document.addEventListener('DOMContentLoaded', function() {
+    // Listen for predictions from other tabs/pages
+    window.addEventListener('storage', function(e) {
+      if (e.key === 'lastPredictionTime') {
+        console.log('New prediction detected, animating models...');
+        animateModelCards();
+        // Auto-refresh after 4 seconds
+        setTimeout(() => {
+          location.reload();
+        }, 4000);
+      }
+    });
+
+    setupModelsRefresh();
+  });
+
+  function animateModelCards() {
+    const modelCards = document.querySelectorAll('.model-card');
+    modelCards.forEach((card, index) => {
+      setTimeout(() => {
+        card.classList.add('refresh-pulse');
+        setTimeout(() => {
+          card.classList.remove('refresh-pulse');
+        }, 600);
+      }, index * 150);
+    });
+
+    // Show update notification
+    const updateAlert = document.createElement('div');
+    updateAlert.className = 'alert alert-warning alert-dismissible fade show fixed-top m-3';
+    updateAlert.style.zIndex = '9999';
+    updateAlert.innerHTML = `
+      <i class="fa-solid fa-bolt me-2"></i>
+      <strong>Models updating!</strong> New prediction metrics being recalculated...
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.insertBefore(updateAlert, document.body.firstChild);
+    
+    setTimeout(() => {
+      updateAlert.remove();
+    }, 4500);
+  }
+
+  function setupModelsRefresh() {
+    // Pulse animation for metric badges
+    setInterval(() => {
+      const badges = document.querySelectorAll('.metric-badge');
+      badges.forEach((badge, index) => {
+        if (index < 2) {
+          badge.style.animation = 'none';
+          setTimeout(() => {
+            badge.style.animation = 'badgeGlow 0.8s ease';
+          }, 10);
+        }
+      });
+    }, 12000);
+  }
+
+  const modelStyle = document.createElement('style');
+  modelStyle.textContent = `
+    @keyframes badgeGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+      50% { box-shadow: 0 0 0 8px rgba(255, 215, 0, 0); }
+    }
+  `;
+  document.head.appendChild(modelStyle);
+</script>
+{% endblock %}

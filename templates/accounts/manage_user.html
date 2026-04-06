@@ -1,0 +1,322 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .manage-header {
+    background: linear-gradient(135deg, #131313 0%, #232323 52%, #1a1a1a 100%);
+    color: #fff;
+    padding: 3rem 2.5rem;
+    border-radius: 24px;
+    margin-bottom: 3rem;
+    border: 2px solid rgba(255, 215, 0, 0.35);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+  }
+
+  .manage-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: #ffd700;
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #dbc98a;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+  }
+
+  .back-link:hover {
+    color: #ffd700;
+  }
+
+  .user-info {
+    background: linear-gradient(160deg, #1c1c1c 0%, #121212 100%);
+    border: 2px solid rgba(255, 215, 0, 0.25);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .info-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .info-label {
+    color: #ffd700;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .info-value {
+    color: #ccc;
+    font-size: 1.1rem;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-right: 0.3rem;
+  }
+
+  .badge-active {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+  }
+
+  .badge-inactive {
+    background: rgba(244, 67, 54, 0.2);
+    color: #f44336;
+  }
+
+  .badge-staff {
+    background: rgba(33, 150, 243, 0.2);
+    color: #2196f3;
+  }
+
+  .badge-superuser {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(218, 165, 32, 0.2));
+    color: #ffd700;
+  }
+
+  .actions-section {
+    background: linear-gradient(160deg, #1c1c1c 0%, #121212 100%);
+    border: 2px solid rgba(255, 215, 0, 0.25);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .actions-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffd700;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid rgba(255, 215, 0, 0.25);
+    padding-bottom: 1rem;
+  }
+
+  .action-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 0.8rem;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(255, 215, 0, 0.15);
+  }
+
+  .action-name {
+    color: #fff;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .action-description {
+    color: #999;
+    font-size: 0.85rem;
+  }
+
+  .action-btn {
+    padding: 0.7rem 1.5rem;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #ffd700 0%, #daa520 100%);
+    color: #141414;
+  }
+
+  .btn-danger {
+    background: rgba(244, 67, 54, 0.2);
+    color: #f44336;
+    border: 1px solid #f44336;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(255, 215, 0, 0.3);
+  }
+
+  .btn-danger:hover {
+    background: rgba(244, 67, 54, 0.35);
+  }
+
+  .current-status {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .form-action {
+    display: inline;
+  }
+
+  .form-action form {
+    display: inline;
+  }
+
+  .form-action button {
+    all: inherit;
+  }
+
+  .confirmation {
+    color: #999;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+  }
+</style>
+
+<div class="manage-header">
+  <div class="manage-title">⚙️ Manage User: {{ user.username }}</div>
+  <a href="{% url 'accounts:admin_dashboard' %}" class="back-link">← Back to Admin Dashboard</a>
+</div>
+
+<div class="user-info">
+  <div class="info-section">
+    <div class="info-label">Username</div>
+    <div class="info-value">{{ user.username }}</div>
+  </div>
+
+  <div class="info-section">
+    <div class="info-label">Email</div>
+    <div class="info-value">{{ user.email|default:"Not set" }}</div>
+  </div>
+
+  <div class="info-section">
+    <div class="info-label">First Name</div>
+    <div class="info-value">{{ user.first_name|default:"Not set" }}</div>
+  </div>
+
+  <div class="info-section">
+    <div class="info-label">Last Name</div>
+    <div class="info-value">{{ user.last_name|default:"Not set" }}</div>
+  </div>
+
+  <div class="info-section">
+    <div class="info-label">Joined Date</div>
+    <div class="info-value">{{ user.date_joined|date:"M d, Y \a\t H:i" }}</div>
+  </div>
+
+  <div class="info-section">
+    <div class="info-label">Last Login</div>
+    <div class="info-value">{{ user.last_login|default:"Never" }}</div>
+  </div>
+
+  <div class="info-section">
+    <div class="info-label">Current Status</div>
+    <div class="current-status">
+      {% if user.is_active %}
+        <span class="badge badge-active">✓ Active</span>
+      {% else %}
+        <span class="badge badge-inactive">✗ Inactive</span>
+      {% endif %}
+
+      {% if user.is_superuser %}
+        <span class="badge badge-superuser">⭐ Superuser</span>
+      {% endif %}
+
+      {% if user.is_staff and not user.is_superuser %}
+        <span class="badge badge-staff">Staff</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="actions-section">
+  <div class="actions-title">🔧 User Actions</div>
+
+  {% if user.id != request.user.id %}
+    <!-- Toggle User Status -->
+    <div class="action-item">
+      <div>
+        <div class="action-name">{{ user.is_active|yesno:"Deactivate,Activate" }} User Account</div>
+        <div class="action-description">
+          {% if user.is_active %}
+            Deactivate this user to prevent login
+          {% else %}
+            Reactivate this user to allow login
+          {% endif %}
+        </div>
+      </div>
+      <form method="POST" class="form-action">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="toggle_status">
+        <button type="submit" class="action-btn btn-primary">
+          {{ user.is_active|yesno:"Deactivate,Activate" }}
+        </button>
+      </form>
+    </div>
+
+    <!-- Toggle Staff Status -->
+    <div class="action-item">
+      <div>
+        <div class="action-name">{{ user.is_staff|yesno:"Revoke,Grant" }} Staff Privileges</div>
+        <div class="action-description">
+          Staff members can access the admin interface
+        </div>
+      </div>
+      <form method="POST" class="form-action">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="toggle_staff">
+        <button type="submit" class="action-btn btn-primary">
+          {{ user.is_staff|yesno:"Revoke,Grant" }} Staff
+        </button>
+      </form>
+    </div>
+
+    <!-- Toggle Superuser Status -->
+    <div class="action-item">
+      <div>
+        <div class="action-name">{{ user.is_superuser|yesno:"Revoke,Grant" }} Superuser Privileges</div>
+        <div class="action-description">
+          Superusers have full system access and control
+        </div>
+      </div>
+      <form method="POST" class="form-action">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="toggle_superuser">
+        <button type="submit" class="action-btn btn-primary">
+          {{ user.is_superuser|yesno:"Revoke,Grant" }} Superuser
+        </button>
+      </form>
+    </div>
+
+    <!-- Delete User -->
+    <div class="action-item">
+      <div>
+        <div class="action-name">Delete User Account</div>
+        <div class="action-description">
+          Permanently delete this user and all associated data
+        </div>
+      </div>
+      <form method="POST" class="form-action" onsubmit="return confirm('Are you sure? This action cannot be undone.');">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="delete">
+        <button type="submit" class="action-btn btn-danger">
+          Delete User
+        </button>
+      </form>
+    </div>
+  {% else %}
+    <div style="text-align: center; padding: 2rem; color: #999;">
+      <p>You cannot modify your own account from this page.</p>
+      <p>Use Django admin panel for self-management</p>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}

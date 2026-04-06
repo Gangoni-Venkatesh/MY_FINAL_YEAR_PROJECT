@@ -1,0 +1,128 @@
+html,
+body {
+    min-height: 100%;
+    background-color: #0b0b0b !important;
+}
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --bs-body-bg: #0b0b0b;
+    --bs-body-color: #ffffff;
+    background-image: radial-gradient(circle at top, #242424 0%, #131313 45%, #0b0b0b 100%) !important;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    color: #ffffff;
+}
+
+.min-vh-75 {
+    min-height: 75vh;
+}
+
+:root {
+    --gold-1: #ffd700;
+    --gold-2: #daa520;
+    --gold-3: #b8860b;
+    --black-1: #0a0a0a;
+    --black-2: #141414;
+    --black-3: #1f1f1f;
+}
+
+main.container {
+    color: #ffffff;
+}
+
+.card,
+.table,
+.list-group-item,
+.modal-content,
+.dropdown-menu,
+.form-control,
+.form-select {
+    background-color: var(--black-2) !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 215, 0, 0.35) !important;
+}
+
+.card {
+    box-shadow: 0 8px 28px rgba(255, 215, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.6) !important;
+}
+
+.card-header,
+.table-light,
+thead.table-light th {
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%) !important;
+    color: var(--gold-1) !important;
+    border-color: rgba(255, 215, 0, 0.25) !important;
+}
+
+.text-muted {
+    color: #d4d4d4 !important;
+}
+
+a,
+.link-primary {
+    color: var(--gold-1) !important;
+}
+
+a:hover,
+.link-primary:hover {
+    color: #ffea7a !important;
+}
+
+.btn-primary,
+.btn-warning,
+.btn-outline-primary:hover,
+.btn-outline-warning:hover {
+    background: linear-gradient(135deg, var(--gold-1) 0%, var(--gold-2) 55%, var(--gold-3) 100%) !important;
+    border-color: var(--gold-2) !important;
+    color: #141414 !important;
+    box-shadow: 0 8px 20px rgba(255, 215, 0, 0.28) !important;
+}
+
+.btn-outline-primary,
+.btn-outline-warning {
+    border-color: var(--gold-2) !important;
+    color: var(--gold-1) !important;
+}
+
+.btn-primary:hover,
+.btn-warning:hover,
+.btn-outline-primary:hover,
+.btn-outline-warning:hover {
+    transform: translateY(-1px);
+}
+
+.badge.bg-info,
+.badge.bg-primary,
+.badge.bg-warning,
+.badge.text-bg-warning {
+    background: linear-gradient(135deg, var(--gold-1) 0%, var(--gold-2) 100%) !important;
+    color: #1a1a1a !important;
+}
+
+.alert-info,
+.alert-primary,
+.alert-warning {
+    background: rgba(255, 215, 0, 0.15) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 215, 0, 0.45) !important;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(255, 215, 0, 0.09) !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--gold-2) !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.22) !important;
+}
+
+footer.bg-white {
+    background: linear-gradient(180deg, #171717 0%, #0d0d0d 100%) !important;
+    border-color: rgba(255, 215, 0, 0.22) !important;
+}
+
+footer .text-muted {
+    color: #e0e0e0 !important;
+}

@@ -1,0 +1,260 @@
+<style>
+  /* Navbar Styling */
+  .navbar {
+    background: linear-gradient(90deg, #0d0d0d 0%, #1a1a1a 50%, #111111 100%) !important;
+    border-bottom: 3px solid #FFD700;
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.8) !important;
+  }
+
+  .navbar-brand {
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    transition: all 0.3s ease;
+    animation: brandPulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.4));
+  }
+
+  .navbar-brand:hover {
+    transform: scale(1.05);
+  }
+
+  @keyframes brandPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
+  }
+
+  /* Nav Links Styling */
+  .navbar-nav .nav-link {
+    position: relative;
+    margin: 0 10px;
+    color: #e0e0e0 !important;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 8px 12px !important;
+    border-radius: 6px;
+  }
+
+  .navbar-nav .nav-link::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #FFD700 0%, #FFA500 100%);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.8);
+  }
+
+  .navbar-nav .nav-link:hover {
+    background: rgba(255, 215, 0, 0.15);
+    color: #FFD700 !important;
+    transform: translateY(-2px);
+    box-shadow: inset 0 0 12px rgba(255, 215, 0, 0.2);
+  }
+
+  .navbar-nav .nav-link:hover::before {
+    width: 100%;
+  }
+
+  .navbar-nav .nav-link.active {
+    background: rgba(255, 215, 0, 0.2);
+    color: #FFD700 !important;
+    border-bottom: 2px solid #FFD700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+  }
+
+  .navbar-nav .nav-link i {
+    margin-right: 6px;
+    transition: transform 0.3s ease;
+  }
+
+  .navbar-nav .nav-link:hover i {
+    transform: rotate(360deg);
+  }
+
+  /* Navbar Text */
+  .navbar-text {
+    color: #a0a0a0 !important;
+    transition: all 0.3s ease;
+    animation: fadeInOut 3s ease-in-out infinite;
+  }
+
+  .navbar-text:hover {
+    color: #FFD700 !important;
+    animation: none;
+  }
+
+  @keyframes fadeInOut {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  /* Button Animations */
+  .btn-outline-light {
+    border: 1.5px solid #FFD700;
+    color: #FFD700 !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-outline-light::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #FFD700 0%, #DAA520 100%);
+    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: -1;
+  }
+
+  .btn-outline-light:hover {
+    color: #1a1a1a !important;
+    border-color: #FFD700;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+  }
+
+  .btn-outline-light:hover::before {
+    left: 0;
+  }
+
+  .btn-warning {
+    background: linear-gradient(135deg, #FFD700 0%, #DAA520 100%) !important;
+    border: none;
+    color: #1a1a1a !important;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-warning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+  }
+
+  .btn-warning::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  .btn-warning:active::after {
+    width: 300px;
+    height: 300px;
+  }
+
+  /* Navbar Toggler Animation */
+  .navbar-toggler {
+    border: 2px solid #FFD700 !important;
+    transition: all 0.3s ease;
+  }
+
+  .navbar-toggler:focus {
+    box-shadow: 0 0 0 0.25rem rgba(255, 215, 0, 0.25);
+  }
+
+  .navbar-toggler:hover {
+    border-color: #DAA520 !important;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 991px) {
+    .navbar-nav .nav-link {
+      margin: 5px 0;
+      padding: 10px 15px !important;
+    }
+    
+    .navbar-nav .nav-link::before {
+      display: none;
+    }
+  }
+</style>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="{% url 'home' %}">
+      <i class="fa-solid fa-cubes"></i> BlockDelay AI
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarNav" aria-controls="navbarNav"
+            aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        {% if user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'accounts:dashboard' %}">
+            <i class="fa-solid fa-chart-line"></i>Dashboard
+          </a>
+        </li>
+        {% if user.is_superuser %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'accounts:admin_dashboard' %}">
+            <i class="fa-solid fa-shield"></i>Admin Panel
+          </a>
+        </li>
+        {% endif %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'datasets:list' %}">
+            <i class="fa-solid fa-database"></i>Datasets
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'modelsapp:list' %}">
+            <i class="fa-solid fa-brain"></i>Models
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'predictions:create' %}">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>Predict
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'reports:overview' %}">
+            <i class="fa-solid fa-chart-bar"></i>Reports
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+      <ul class="navbar-nav ms-auto">
+        {% if user.is_authenticated %}
+        <li class="nav-item">
+          <span class="navbar-text me-3">
+            <i class="fa-regular fa-user"></i> {{ user.username }}
+          </span>
+        </li>
+        <li class="nav-item">
+          <form action="{% url 'accounts:logout' %}" method="post" class="d-inline">
+            {% csrf_token %}
+            <button class="btn btn-outline-light btn-sm" type="submit">Logout</button>
+          </form>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="btn btn-outline-light btn-sm me-2" href="{% url 'accounts:login' %}">Login</a>
+        </li>
+        <li class="nav-item">
+          <a class="btn btn-warning btn-sm" href="{% url 'accounts:register' %}">Register</a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>

@@ -1,0 +1,491 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .dashboard-shell {
+    color: #ffffff;
+  }
+
+  .hero-section {
+    position: relative;
+    background: linear-gradient(135deg, #131313 0%, #232323 52%, #1a1a1a 100%);
+    color: #fff;
+    padding: 4.5rem 3.5rem;
+    border-radius: 24px;
+    margin-bottom: 3.5rem;
+    border: 2px solid rgba(255, 215, 0, 0.35);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), 0 0 32px rgba(255, 215, 0, 0.16);
+    overflow: hidden;
+  }
+
+  .hero-section::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(255, 215, 0, 0.12), transparent 45%);
+    pointer-events: none;
+  }
+
+  .hero-title {
+    font-size: clamp(2.5rem, 5vw, 3.8rem);
+    font-weight: 800;
+    margin-bottom: 1rem;
+    letter-spacing: 0.5px;
+  }
+
+  .hero-subtitle {
+    font-size: 1.35rem;
+    color: #dbc98a;
+    margin-bottom: 0;
+  }
+
+  .live-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    background: rgba(255, 215, 0, 0.08);
+    color: #ffd700;
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  .live-chip-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ffd700;
+    animation: chipPulse 1.8s infinite;
+  }
+
+  @keyframes chipPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.8); }
+  }
+
+  .quick-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3.5rem;
+  }
+
+  .stat-box {
+    background: linear-gradient(160deg, #1c1c1c 0%, #121212 100%);
+    border: 2px solid rgba(255, 215, 0, 0.25);
+    border-radius: 18px;
+    padding: 2rem 1.8rem;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-height: 140px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .stat-box:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(255, 215, 0, 0.22);
+  }
+
+  .stat-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    color: #1a1a1a;
+    background: linear-gradient(135deg, #ffd700 0%, #daa520 100%);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.35);
+    font-size: 2.2rem;
+  }
+
+  .stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #ffd700;
+    line-height: 1;
+    margin-bottom: 0.4rem;
+  }
+
+  .stat-label {
+    font-size: 0.95rem;
+    color: #d8c57b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .feature-card {
+    border: 2px solid rgba(255, 215, 0, 0.22);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.28s ease;
+    background: linear-gradient(160deg, #1b1b1b 0%, #121212 100%);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 48px rgba(255, 215, 0, 0.2);
+  }
+
+  .feature-header {
+    padding: 2.5rem 2rem;
+    text-align: center;
+    border-bottom: 2px solid rgba(255, 215, 0, 0.26);
+    background: linear-gradient(135deg, #111111 0%, #252525 100%);
+  }
+
+  .feature-icon {
+    font-size: 3.2rem;
+    color: #ffd700;
+    margin-bottom: 0.8rem;
+  }
+
+  .feature-title {
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+  }
+
+  .feature-body {
+    padding: 2.2rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .feature-description {
+    font-size: 1.05rem;
+    color: #d8c57b;
+    margin-bottom: 1.6rem;
+    flex-grow: 1;
+    line-height: 1.65;
+  }
+
+  .btn-feature {
+    padding: 1rem 1.5rem;
+    font-weight: 700;
+    font-size: 1.05rem;
+    border-radius: 12px;
+    text-decoration: none;
+    display: inline-block;
+    background: linear-gradient(135deg, #ffd700 0%, #daa520 100%);
+    color: #151515;
+    border: none;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .btn-feature:hover {
+    color: #0f0f0f;
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(255, 215, 0, 0.32);
+  }
+
+  .info-card {
+    background: linear-gradient(160deg, #1a1a1a 0%, #111111 100%);
+    border: 2px solid rgba(255, 215, 0, 0.22);
+    border-radius: 20px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  }
+
+  .info-card .card-body {
+    padding: 2.5rem;
+  }
+
+  .info-card .card-title {
+    color: #ffd700;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem !important;
+  }
+
+  .info-card li,
+  .info-card p,
+  .info-card small {
+    color: #f0e3ad;
+    font-size: 1.05rem;
+    line-height: 1.8;
+  }
+
+  .info-card li {
+    margin-bottom: 1.2rem !important;
+  }
+
+  .feature-list i {
+    color: #ffd700 !important;
+  }
+
+  @media (max-width: 768px) {
+    .hero-section {
+      padding: 2.5rem 1.8rem;
+    }
+
+    .stat-box {
+      padding: 1.5rem;
+      min-height: 110px;
+    }
+
+    .stat-icon {
+      width: 56px;
+      height: 56px;
+      font-size: 1.8rem;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+    }
+
+    .feature-header {
+      padding: 1.8rem 1.5rem;
+    }
+
+    .feature-body {
+      padding: 1.5rem;
+    }
+
+    .btn-feature {
+      padding: 0.8rem 1.2rem;
+      font-size: 0.95rem;
+    }
+  }
+</style>
+
+<div class="dashboard-shell">
+  <div class="hero-section">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+      <div>
+        <div class="hero-title">
+          <i class="fa-solid fa-chart-line me-2"></i>Welcome to BlockDelay AI
+        </div>
+        <p class="hero-subtitle">Predict Bitcoin block delays using advanced machine learning models</p>
+      </div>
+      <span class="live-chip">
+        <span class="live-chip-dot"></span>
+        LIVE UPDATES
+      </span>
+    </div>
+  </div>
+
+  <div class="quick-stats">
+    <div class="stat-box">
+      <div class="stat-icon"><i class="fa-solid fa-brain"></i></div>
+      <div>
+        <div class="stat-value">{{ active_models }}</div>
+        <p class="stat-label">ML Models</p>
+      </div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-icon"><i class="fa-solid fa-database"></i></div>
+      <div>
+        <div class="stat-value">{{ user_datasets }}</div>
+        <p class="stat-label">Your Datasets</p>
+      </div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-icon"><i class="fa-solid fa-bullseye"></i></div>
+      <div>
+        <div class="stat-value">{{ avg_accuracy }}%</div>
+        <p class="stat-label">Avg Accuracy</p>
+      </div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+      <div>
+        <div class="stat-value">{{ user_predictions }}</div>
+        <p class="stat-label">Predictions Made</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-5 mt-2">
+    <div class="col-lg-4">
+      <div class="feature-card">
+        <div class="feature-header">
+          <div class="feature-icon"><i class="fa-solid fa-database"></i></div>
+          <h5 class="feature-title">Datasets</h5>
+        </div>
+        <div class="feature-body">
+          <p class="feature-description">Upload blockchain CSV files and manage training-ready data with instant status updates.</p>
+          <a href="{% url 'datasets:list' %}" class="btn btn-feature">
+            <i class="fa-solid fa-folder-open me-2"></i>View Datasets
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="feature-card">
+        <div class="feature-header">
+          <div class="feature-icon"><i class="fa-solid fa-microchip"></i></div>
+          <h5 class="feature-title">ML Models</h5>
+        </div>
+        <div class="feature-body">
+          <p class="feature-description">Train and compare MLE, Bayesian HMC, and Bayesian Gibbs models with clear performance views.</p>
+          <a href="{% url 'modelsapp:list' %}" class="btn btn-feature">
+            <i class="fa-solid fa-chart-simple me-2"></i>View Models
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="feature-card">
+        <div class="feature-header">
+          <div class="feature-icon"><i class="fa-solid fa-bolt"></i></div>
+          <h5 class="feature-title">Predict</h5>
+        </div>
+        <div class="feature-body">
+          <p class="feature-description">Enter real network conditions and get delay prediction results with confidence instantly.</p>
+          <a href="{% url 'predictions:create' %}" class="btn btn-feature">
+            <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Predict Now
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-5 g-5">
+    <div class="col-lg-8">
+      <div class="info-card card">
+        <div class="card-body">
+          <h5 class="card-title mb-3"><i class="fa-solid fa-lightbulb me-2"></i>Getting Started</h5>
+          <ul class="list-unstyled mb-0">
+            <li class="mb-2"><strong>Step 1:</strong> Upload dataset with block interval, size and fee features</li>
+            <li class="mb-2"><strong>Step 2:</strong> Train models and review updated metrics</li>
+            <li class="mb-2"><strong>Step 3:</strong> Compare model quality and choose best performer</li>
+            <li class="mb-0"><strong>Step 4:</strong> Run predictions and monitor live dashboard refreshes</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="info-card card">
+        <div class="card-body">
+          <h5 class="card-title mb-3"><i class="fa-solid fa-star me-2"></i>Features</h5>
+          <ul class="list-unstyled small feature-list mb-0">
+            <li class="mb-2"><i class="fa-solid fa-circle-check me-2"></i>Multi-algorithm comparison</li>
+            <li class="mb-2"><i class="fa-solid fa-circle-check me-2"></i>Real-time page updates</li>
+            <li class="mb-2"><i class="fa-solid fa-circle-check me-2"></i>Advanced PR-AUC insights</li>
+            <li class="mb-2"><i class="fa-solid fa-circle-check me-2"></i>Prediction history tracking</li>
+            <li class="mb-0"><i class="fa-solid fa-circle-check me-2"></i>Production-ready workflow</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Real-time dashboard updates
+  document.addEventListener('DOMContentLoaded', function() {
+    // Listen for predictions from other tabs/pages
+    window.addEventListener('storage', function(e) {
+      if (e.key === 'lastPredictionTime') {
+        console.log('New prediction detected, updating dashboard...');
+        updateDashboardStatsAJAX();
+      }
+    });
+
+    // Also auto-refresh stats every 5 seconds to catch updates
+    setInterval(() => {
+      updateDashboardStatsAJAX();
+    }, 5000);
+
+    // Initial setup
+    setupDashboardRefresh();
+  });
+
+  function updateDashboardStatsAJAX() {
+    // Fetch updated stats from the API endpoint
+    fetch('/accounts/api/dashboard-stats/')
+      .then(response => response.json())
+      .then(data => {
+        // Update stat values with animation
+        const statBoxes = document.querySelectorAll('.stat-box');
+        
+        // Map of stat values to display
+        const statsMap = {
+          0: data.active_models, // ML Models
+          1: data.user_datasets, // Your Datasets
+          2: data.avg_accuracy,  // Avg Accuracy
+          3: data.user_predictions // Predictions Made
+        };
+
+        statBoxes.forEach((box, index) => {
+          const statValue = box.querySelector('.stat-value');
+          const currentValue = parseInt(statValue.textContent);
+          const newValue = statsMap[index];
+
+          if (currentValue !== newValue) {
+            // Animate the update
+            statValue.style.animation = 'none';
+            statValue.classList.add('stat-updating');
+            
+            setTimeout(() => {
+              statValue.textContent = newValue + (index === 2 ? '%' : '');
+              statValue.style.animation = 'statsGlow 0.6s ease';
+              statValue.classList.remove('stat-updating');
+            }, 50);
+          }
+        });
+      })
+      .catch(error => console.log('Error fetching stats:', error));
+  }
+
+  function animateStatsUpdate() {
+    const statBoxes = document.querySelectorAll('.stat-box');
+    statBoxes.forEach((box, index) => {
+      setTimeout(() => {
+        box.classList.add('fade-update');
+        setTimeout(() => {
+          box.classList.remove('fade-update');
+        }, 500);
+      }, index * 100);
+    });
+  }
+
+  function setupDashboardRefresh() {
+    // Pulse animation on stats every 8 seconds
+    setInterval(() => {
+      const statValues = document.querySelectorAll('.stat-value');
+      statValues.forEach(val => {
+        if (val.offsetParent !== null) { // Check if visible
+          val.style.animation = 'none';
+          setTimeout(() => {
+            val.style.animation = 'statsGlow 0.6s ease';
+          }, 10);
+        }
+      });
+    }, 8000);
+  }
+
+  // Add CSS animation for stats glow
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes statsGlow {
+      0%, 100% { color: #daa520; }
+      50% { color: #ffea75; }
+    }
+
+    .stat-updating {
+      animation: statFlash 0.3s ease !important;
+    }
+
+    @keyframes statFlash {
+      0% { color: #ffd700; transform: scale(1); }
+      50% { color: #ffea75; transform: scale(1.05); }
+      100% { color: #daa520; transform: scale(1); }
+    }
+  `;
+  document.head.appendChild(style);
+</script>
+
+{% endblock %}
